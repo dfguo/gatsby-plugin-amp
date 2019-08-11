@@ -206,7 +206,7 @@ export const replaceRenderer = (
   const defaults = {
     image: {
       width: 640,
-      height: 475,
+      height: 320,
       layout: "responsive"
     },
     twitter: {
@@ -216,7 +216,7 @@ export const replaceRenderer = (
     },
     iframe: {
       width: 640,
-      height: 475,
+      height: 320,
       layout: "responsive"
     }
   };
@@ -240,14 +240,28 @@ export const replaceRenderer = (
       const attributes = Object.keys(image.attributes);
       const includedAttributes = attributes.map(key => {
         const attribute = image.attributes[key];
-        ampImage.setAttribute(attribute.name, attribute.value);
-        return attribute.name;
+        let name = attribute.name;
+        if (attribute.name.startsWith("data-amp")) {
+          name = attribute.name.replace(/^data-amp-/, "");
+        }
+        ampImage.setAttribute(name, attribute.value);
+        return name;
       });
+
+      // if one of the default is overwritten, don't use default to avoid wrong aspect ration when only 'width' or 'height' is given
+      let useDefault = true;
       Object.keys(defaults.image).forEach(key => {
-        if (includedAttributes && includedAttributes.indexOf(key) === -1) {
-          ampImage.setAttribute(key, defaults.image[key]);
+        if (includedAttributes && includedAttributes.indexOf(key) !== -1) {
+          useDefault = false;
         }
       });
+      if (useDefault) {
+        Object.keys(defaults.image).forEach(key => {
+          if (includedAttributes && includedAttributes.indexOf(key) === -1) {
+            ampImage.setAttribute(key, defaults.image[key]);
+          }
+        });
+      }
       image.parentNode.replaceChild(ampImage, image);
     });
 
