@@ -132,7 +132,7 @@ export const onPreRenderHTML = (
         href={interpolate(relAmpHtmlPattern, {
           canonicalBaseUrl,
           pathIdentifier,
-          pathname
+          pathname: pathname.match(/\/$/) ? pathname.slice(0, -1) : pathname // supporting .amp usecase by removing trailing slash from pathname
         }).replace(/([^:])(\/\/+)/g, "$1/")}
       />,
       ...headComponents
